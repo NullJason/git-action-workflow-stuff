@@ -1,0 +1,32 @@
+name: Run All Java Files in TestBuild
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  run-java:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Compile all Java files in TestBuild
+      run: javac TestBuild/*.java
+
+    - name: Run all main classes in TestBuild
+      run: |
+        for file in TestBuild/*.class; do
+          classname=$(basename "$file" .class)
+          if grep -q 'public static void main' "TestBuild/${classname}.java"; then
+            echo "Running $classname..."
+            java -cp TestBuild "$classname"
+          fi
+        done
